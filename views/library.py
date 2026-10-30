@@ -101,3 +101,19 @@ if add:
                 st.caption(f"Removed {len(res.removed_lines)} repeated header or footer lines while parsing.")
         except Exception as e:
             st.error(f"Couldn’t add that file: {str(e)[:240]}")
+
+st.subheader("Delete all data")
+st.markdown(f"Removes every document and chunk this app stored in turbopuffer (the `{s.chunks_namespace}` and "
+            f"`{s.docs_namespace}` namespaces), for everyone. You can load the sample library again afterwards.")
+sure = st.checkbox("I understand this can’t be undone", key="confirm_wipe")
+if st.button("Delete all data", disabled=not sure):
+    try:
+        with st.spinner("Deleting…"):
+            n = ingest.delete_all_data(client, s)
+        st.cache_data.clear()
+        st.session_state.pop("last", None)
+        st.session_state.pop("confirm_wipe", None)
+        st.success("All data deleted." if n else "There was nothing to delete.")
+        st.rerun()
+    except Exception as e:
+        st.error(f"Couldn’t delete the data: {str(e)[:240]}")

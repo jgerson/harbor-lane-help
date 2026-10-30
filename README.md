@@ -10,7 +10,7 @@ An internal help desk for a (fictional) coffee roaster. Staff ask a question and
 
 - **Ask.** Type a question or pick a suggestion. *Quick answer* runs one search and streams a cited answer. *Research* lets Claude run several searches for questions with more than one part, showing each step as it happens. Citations are highlighted in signal yellow; open any source to see the cited passage highlighted in its surrounding text.
 - **Permissions.** Switch who you're signed in as (barista, manager, finance lead, people team) and the answers change, because every search is filtered to the documents your groups may read. There is no code path that searches without that filter.
-- **Library.** See the documents shared with you, add a PDF, Markdown or text file and watch it parsed, chunked, embedded and indexed, inspect any document's chunks, or remove one.
+- **Library.** See the documents shared with you, add a PDF, Markdown or text file and watch it parsed, chunked, embedded and indexed, inspect any document's chunks, or remove one. **Delete all data** at the bottom wipes everything this app stored in turbopuffer (after a confirmation), and you can reload the sample library afterwards.
 - **Insights.** Timings for this session's questions (search time, time to first words, tokens), and a 16-question test set that scores each search mode on whether the right section comes back first or in the top three, plus a count of restricted passages returned (always 0).
 
 ![A cited source in dark mode](docs/source-dark.png)
@@ -106,7 +106,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-24 tests cover parsing and chunking, re-uploads and deletes, permission filtering for every persona and question, the streamed answer, the research loop (including its step cap and a failing tool), the evaluation, the UI helpers, and a headless click-through of the app.
+26 tests cover parsing and chunking, re-uploads, deletes and wiping all data, permission filtering for every persona and question, the streamed answer, the research loop (including its step cap and a failing tool), the evaluation, the UI helpers, and a headless click-through of the app.
 
 ## A short demo
 

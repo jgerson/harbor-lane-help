@@ -43,3 +43,10 @@ def test_ingest_requires_a_group(client, settings):
     import pytest
     with pytest.raises(ValueError):
         ingest.ingest(client, settings, "c.md", b"# C\n\ntext", "Doc C", [])
+
+
+def test_delete_all_data_removes_both_namespaces(library, client, settings, fake_tpuf):
+    assert ingest.delete_all_data(client, settings) == 2
+    assert settings.chunks_namespace not in fake_tpuf.db and settings.docs_namespace not in fake_tpuf.db
+    assert ingest.list_documents(client, settings) == []
+    assert ingest.delete_all_data(client, settings) == 0   # safe to run again

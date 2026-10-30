@@ -113,6 +113,19 @@ def document_chunks(client, settings: Settings, doc_id: str, groups: list[str]) 
     return [tpuf.row_dict(r) for r in res.rows]
 
 
+def delete_all_data(client, settings: Settings) -> int:
+    """Delete this tenant's chunks and registry namespaces. Returns how many existed."""
+    deleted = 0
+    for name in (settings.chunks_namespace, settings.docs_namespace):
+        try:
+            client.namespace(name).delete_all()
+            deleted += 1
+        except Exception as e:
+            if not tpuf.is_missing_namespace(e):
+                raise
+    return deleted
+
+
 def delete_document(client, settings: Settings, doc_id: str) -> None:
     client.namespace(settings.chunks_namespace).write(delete_by_filter=("doc_id", "Eq", doc_id))
     client.namespace(settings.docs_namespace).write(deletes=[doc_id])

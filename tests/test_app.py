@@ -45,3 +45,14 @@ def test_quick_search_without_claude_shows_sources(settings, client, library):
     at.run()
     assert not at.exception
     assert any("Sources" in m.value for m in at.markdown)
+
+
+def test_delete_all_data_needs_confirmation_then_empties_the_library(settings, client, library):
+    at = signed_in(settings)
+    at.switch_page("views/library.py").run()
+    button = [b for b in at.button if b.label == "Delete all data"][0]
+    assert button.disabled
+    at.checkbox(key="confirm_wipe").check().run()
+    [b for b in at.button if b.label == "Delete all data"][0].click().run()
+    assert not at.exception
+    assert any("Nothing is shared" in i.value for i in at.info)

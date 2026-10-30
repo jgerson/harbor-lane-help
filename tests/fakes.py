@@ -71,7 +71,9 @@ class FakeTurbopuffer:
                 return urlparse(self.path).path.split("/namespaces/")[-1].split("/")[0]
 
             def do_DELETE(self):
-                fake.db.pop(self._ns(), None)
+                if self._ns() not in fake.db:   # like the real API: deleting a missing namespace is a 404
+                    return self._send({"error": "namespace not found", "status": "error"}, 404)
+                fake.db.pop(self._ns())
                 self._send({"status": "ok"})
 
             def do_GET(self):
