@@ -1,0 +1,8 @@
+# Harbor Lane Help (hobby project)
+streamlit>=1.50
+turbopuffer>=3.0
+anthropic>=0.40
+pypdf>=5.0
+pymupdf>=1.26        # provides pymupdf4llm (PDF -> Markdown)
+chonkie>=1.5
+pandas

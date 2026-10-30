@@ -1,0 +1,91 @@
+# Harbor Lane Help
+
+> **A personal hobby project.** I built this to learn how a production-style retrieval app fits together. It isn't affiliated with or endorsed by turbopuffer or Anthropic, and it isn't meant for real company data. Harbor Lane Coffee Roasters, its staff and its documents are all fictional.
+
+An internal help desk for a (fictional) coffee roaster. Staff ask a question and get a short answer drawn only from documents they're allowed to read, with every claim cited and every source one click away. Built with [Streamlit](https://streamlit.io), [turbopuffer](https://turbopuffer.com) for search, and [Claude](https://www.anthropic.com/claude) for answers.
+
+![An answer with citations](docs/answer.png)
+
+## What it does
+
+- **Ask.** Type a question or pick a suggestion. *Quick answer* runs one search and streams a cited answer. *Research* lets Claude run several searches for questions with more than one part, showing each step as it happens. Citations are highlighted in signal yellow; open any source to see the cited passage highlighted in its surrounding text.
+- **Permissions.** Switch who you're signed in as (barista, manager, finance lead, people team) and the answers change, because every search is filtered to the documents your groups may read. There is no code path that searches without that filter.
+- **Library.** See the documents shared with you, add a PDF, Markdown or text file and watch it parsed, chunked, embedded and indexed, inspect any document's chunks, or remove one.
+- **Insights.** Timings for this session's questions (search time, time to first words, tokens), and a 16-question test set that scores each search mode on whether the right section comes back first or in the top three, plus a count of restricted passages returned (always 0).
+
+![A cited source in dark mode](docs/source-dark.png)
+
+## How it works
+
+```
+Write path:  file ─▶ parse (pymupdf4llm, header/footer cleanup) ─▶ chunk by heading (~300 tokens)
+                  ─▶ turbopuffer: native embedding + BM25 index, groups on every chunk ─▶ library registry
+
+Read path:   question ─▶ turbopuffer hybrid search, filtered by ("groups", "ContainsAny", your_groups)
+                      ─▶ rerank ─▶ Claude writes a cited answer (streamed)
+             research ─▶ Claude calls tools (list documents, search, read around) until it can answer
+```
+
+| Module | Job |
+|---|---|
+| `helpdesk/config.py` | Settings from environment variables |
+| `helpdesk/tpuf.py` | turbopuffer client (3 retries, 30 s timeout) and schema |
+| `helpdesk/parsing.py`, `chunking.py`, `ingest.py` | The write path |
+| `helpdesk/retrieval.py` | Permission-filtered search; refuses to run without groups |
+| `helpdesk/answer.py` | Streamed answers and the research agent (capped at 5 rounds) |
+| `helpdesk/evals.py` | The golden test set and scoring |
+| `helpdesk/telemetry.py` | One JSON log line per question, without the question text |
+| `views/` | The Ask, Library and Insights pages |
+
+## Production habits it tries to show
+
+- API keys stay on the server; the browser never sees them.
+- One namespace per tenant, with group filters inside every query, so a restricted passage can't reach a person or the model writing their answer.
+- Retries with backoff and timeouts on both turbopuffer and Claude; friendly error states instead of stack traces.
+- A per-session rate limit to protect the API budget.
+- Re-uploading a document replaces it cleanly (delete by filter, then write).
+- Structured logs and per-stage timings, so you can say where every millisecond went.
+- A test suite with an in-memory turbopuffer and a scripted Claude, run on every push by GitHub Actions. No keys needed.
+
+What it deliberately doesn't do: real sign-in (the persona picker stands in; swapping in Streamlit's `st.login` with your identity provider only changes where the groups come from), persistent query logs, or multi-language code paths.
+
+## Run it locally
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env        # set APP_PASSWORD, TURBOPUFFER_API_KEY, optionally ANTHROPIC_API_KEY
+set -a; source .env; set +a
+streamlit run app.py
+```
+
+Sign in with your `APP_PASSWORD`, then click **Load sample library** on the Ask page. Without an Anthropic key, search and sources still work; written answers and research mode are off.
+
+## Deploy to Streamlit Community Cloud
+
+Create an app from this repo with `app.py` as the main file, and paste the values from `.streamlit/secrets.toml.example` under **Advanced settings → Secrets**. The theme (fonts, light and dark colours) comes from `.streamlit/config.toml` automatically. Free apps sleep when idle, so open the link a minute before you need it.
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+24 tests cover parsing and chunking, re-uploads and deletes, permission filtering for every persona and question, the streamed answer, the research loop (including its step cap and a failing tool), the evaluation, the UI helpers, and a headless click-through of the app.
+
+## A short demo
+
+1. As **Sam, barista**, ask "How many weeks of parental leave does a secondary caregiver in the office get?" The answer comes from a table in a PDF; open the source to see the table with the cited passage highlighted.
+2. Ask "What's the pay range for a roastery supervisor?" Sam is told it isn't in the documents he can read. Switch to **Priya, roastery manager** and ask again: she gets the salary bands.
+3. Switch to **Research** and ask "I'm going to London for three days with a $600 hotel. What can I spend on meals, and who approves the hotel?" Watch Claude split it into separate searches, then open *How this answer was found*.
+4. On **Library**, compare what Sam and Dana can see, and add a document of your own.
+5. On **Insights**, run the test set and compare search modes.
+
+## Costs
+
+Parsing and chunking run locally. turbopuffer usage for a library this size is tiny, though paid plans have a monthly minimum. Each Claude answer costs a fraction of a cent.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

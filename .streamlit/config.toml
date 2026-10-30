@@ -1,0 +1,49 @@
+# Harbor Lane Help theme. Colours come from the harbor, not the coffee bag:
+# slate water, harbor teal for actions, and signal yellow used only to mark
+# where an answer came from.
+
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = true
+
+[server]
+maxUploadSize = 25
+
+[theme]
+font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+headingFont = "Bricolage Grotesque:https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+baseRadius = "medium"
+buttonRadius = "full"
+showWidgetBorder = true
+showSidebarBorder = false
+
+[theme.light]
+primaryColor = "#0E6F68"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#EEF3F2"
+textColor = "#1C3540"
+borderColor = "#D3DFDD"
+linkColor = "#0E6F68"
+
+[theme.light.sidebar]
+backgroundColor = "#1C3540"
+secondaryBackgroundColor = "#264754"
+textColor = "#E4EEEC"
+primaryColor = "#F4C430"
+borderColor = "#355966"
+
+[theme.dark]
+primaryColor = "#4FC1B6"
+backgroundColor = "#0F1E24"
+secondaryBackgroundColor = "#17303A"
+textColor = "#E3ECEA"
+borderColor = "#2A4652"
+linkColor = "#7AD3CA"
+
+[theme.dark.sidebar]
+backgroundColor = "#0A161B"
+secondaryBackgroundColor = "#12262E"
+textColor = "#D9E6E3"
+primaryColor = "#F4C430"
+borderColor = "#22404A"
