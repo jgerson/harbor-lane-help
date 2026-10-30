@@ -49,6 +49,40 @@ Read path:   question ─▶ turbopuffer hybrid search, filtered by ("groups", "
 
 What it deliberately doesn't do: real sign-in (the persona picker stands in; swapping in Streamlit's `st.login` with your identity provider only changes where the groups come from), persistent query logs, or multi-language code paths.
 
+## Configuration
+
+Only two settings are required, plus one optional:
+
+| Variable | Needed? | What it does |
+|---|---|---|
+| `APP_PASSWORD` | Required | The password on the sign-in page. The app won't open without it. Pick anything. |
+| `TURBOPUFFER_API_KEY` | Required | Search and storage. |
+| `ANTHROPIC_API_KEY` | Optional | Turns on written answers and Research mode. Without it you still get search results and sources. |
+
+On **Streamlit Community Cloud**, paste these under App settings → Secrets:
+
+```toml
+APP_PASSWORD = "choose-a-password"
+TURBOPUFFER_API_KEY = "tpuf_..."
+ANTHROPIC_API_KEY = "sk-ant-..."
+```
+
+**Running locally**, put the same three in a `.env` file without quotes (`APP_PASSWORD=choose-a-password`) and load it into your shell before starting the app (see below).
+
+Everything else has a default and can usually be left alone; `.env.example` lists them all:
+
+| Variable | Default | Notes |
+|---|---|---|
+| `TURBOPUFFER_REGION` | `gcp-us-central1` | Where your data lives. Pick a region where your plan supports native embedding. |
+| `TENANT` | `harbor-lane` | Part of the namespace names, so one account can hold several tenants. |
+| `NAMESPACE_PREFIX` | `hlhelp` | Prefix for every namespace this app creates. |
+| `EMBED_MODEL` / `EMBED_DIMS` | `nvidia/nemotron-3-embed-8b` / `1024` | turbopuffer's native embedding model and vector size. Changing these needs a fresh library. |
+| `RERANK_MODEL` | `zeroentropy/zerank-2` | Used by quick answers; falls back to fused results if unavailable. |
+| `CLAUDE_MODEL` | `claude-sonnet-5-5` | The model that writes answers. |
+| `QUESTIONS_PER_MINUTE` | `8` | Per-session rate limit. |
+
+Don't set `TURBOPUFFER_BASE_URL` in a real deployment. It exists only so the tests can point at the in-memory fake, and setting it would send every search to an address that doesn't exist.
+
 ## Run it locally
 
 ```bash
@@ -63,7 +97,7 @@ Sign in with your `APP_PASSWORD`, then click **Load sample library** on the Ask 
 
 ## Deploy to Streamlit Community Cloud
 
-Create an app from this repo with `app.py` as the main file, and paste the values from `.streamlit/secrets.toml.example` under **Advanced settings → Secrets**. The theme (fonts, light and dark colours) comes from `.streamlit/config.toml` automatically. Free apps sleep when idle, so open the link a minute before you need it.
+Create an app from this repo with `app.py` as the main file, and add the secrets from [Configuration](#configuration) under **Advanced settings → Secrets** (`.streamlit/secrets.toml.example` has them ready to copy). The theme (fonts, light and dark colours) comes from `.streamlit/config.toml` automatically. Free apps sleep when idle, so open the link a minute before you need it.
 
 ## Tests
 
